@@ -1,10 +1,17 @@
-const { Router } = require('express')
-const { authController } = require('../controllers')
-const middlewares = require('../middlewares/routes/auth.middlewares')
+const { Router } = require("express");
+const { authController } = require("../controllers");
+const middlewares = require("../middlewares/routes/auth.middlewares");
 
-const router = Router()
+const router = Router();
 
-router.post('/login', middlewares.login, authController.login)
-router.post('/googleSignIn', middlewares.googleSignIn, authController.googleSignIn)
+router.post("/login", middlewares.login, authController.login);
 
-module.exports = router
+router.post(
+  "/googleSignIn",
+  middlewares.googleSignIn,
+  authController.googleSignIn,
+);
+
+router.get("/", middlewares.resetToken, authController.resetToken);
+
+module.exports = router;
