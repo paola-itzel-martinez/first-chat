@@ -1,60 +1,69 @@
-const { request, response } = require('express')
-const User = require('../models/user')
+const { request, response } = require("express");
+const User = require("../models/user");
 const {
   createJWT,
   createUser,
   isValidPassword,
   googleLoginVerify,
-  setResponseError
-} = require('../helpers')
+  setResponseError,
+} = require("../helpers");
 
 const AUTH_ERROR = {
   code: 400,
-  error: "Bad credentials"
-}
+  error: "Bad credentials",
+};
 
-const login = async(request, response) => {
-  const { email, password } = request.body
+const login = async (request, response) => {
+  const { email, password } = request.body;
 
   try {
-    const user = await User.findOne({ email, status: true })
+    const user = await User.findOne({ email, status: true });
 
-    if (!user) return setResponseError({ response, ...AUTH_ERROR })
+    if (!user) return setResponseError({ response, ...AUTH_ERROR });
 
     if (!isValidPassword(password, user.password)) {
-      return setResponseError({ response, ...AUTH_ERROR })
+      return setResponseError({ response, ...AUTH_ERROR });
     }
 
-    const token = await createJWT({ uid: user.id })
+    const token = await createJWT({ uid: user.id });
 
-    response.json({ token })
+    response.json({ token });
   } catch (error) {
-    return setResponseError({ response, error })
+    return setResponseError({ response, error });
   }
-}
+};
 
-const googleSignIn = async(req, response) => {
-  const { googleToken } = req.body
+const googleSignIn = async (request, response) => {
+  const { googleToken } = request.body;
 
   try {
-   const { name, picture, email } = await googleLoginVerify(googleToken)
-   const user = await User.findOne({ email, status: true })
+    const { name, picture, email } = await googleLoginVerify(googleToken);
+    const user = await User.findOne({ email, status: true });
 
-   if (!user) {
-      const { code } = await createUser({ name, email, password: 'goo' })
+    if (!user) {
+      const { code } = await createUser({ name, email, password: "goo" });
 
-      if (code === 500) return setResponseError({ response })
-   }
+      if (code === 500) return setResponseError({ response });
+    }
 
-   const token = await createJWT({ uid: user.id })
+    const token = await createJWT({ uid: user.id });
 
-   response.json({ token, user })
+    response.json({ token, user });
   } catch (error) {
-    return setResponseError({ response, error })
+    return setResponseError({ response, error });
   }
-}
+};
+
+const resetToken = async (request, response) => {
+  const { user } = request;
+
+  const token = await createJWT({ uid: user.id });
+
+  response.json({ user, token });
+};
 
 module.exports = {
-    login,
-    googleSignIn
-}
+  login,
+  googleSignIn,
+  resetToken,
+};
